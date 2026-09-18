@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>Instagram</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{height:100%}
+body{min-height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:#ffffff;color:#111111;transition:background .35s ease,color .35s ease;overflow-x:hidden}
+@media(prefers-color-scheme:dark){body{background:#000000;color:#f2f2f7}}
+.wrap{max-width:640px;margin:0 auto;padding:clamp(24px,6vw,48px) clamp(18px,5vw,32px) 48px}
+header{text-align:center;padding:20px 0 26px}
+.logo{width:86px;height:86px;margin:0 auto 18px;border-radius:25px;position:relative;animation:glow 6s ease-in-out infinite}
+.logo::before{content:'';position:absolute;inset:0;border-radius:25px;background:linear-gradient(135deg,#feda75,#fa7e1e,#d62976,#962fbf,#4f5bd5)}
+.logo::after{content:'';position:absolute;inset:15px;border:5px solid #ffffff;border-radius:17px}
+.lens{position:absolute;inset:31px;border:5px solid #ffffff;border-radius:50%}
+.dot{position:absolute;top:26px;right:26px;width:10px;height:10px;background:#ffffff;border-radius:50%}
+@keyframes glow{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+h1{font-size:clamp(1.5rem,6vw,2.1rem);font-weight:800;letter-spacing:-.02em}
+.sub{margin:12px auto 0;max-width:46ch;color:#8e8e93;font-size:.95rem;line-height:1.55}
+code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.85em;background:rgba(128,128,140,.14);padding:2px 6px;border-radius:6px}
+.clock{margin-top:18px;font-size:1.1rem;font-weight:700;font-variant-numeric:tabular-nums;background:linear-gradient(135deg,#fa7e1e,#d62976,#962fbf);-webkit-background-clip:text;background-clip:text;color:transparent}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}
+.card{background:rgba(128,128,140,.08);border:1px solid rgba(128,128,140,.16);border-radius:18px;padding:15px 16px;opacity:0;transform:translateY(14px) scale(.96);animation:rise .55s cubic-bezier(.22,.9,.28,1) forwards;animation-delay:calc(var(--i)*70ms)}
+@keyframes rise{to{opacity:1;transform:none}}
+.k{font-size:.68rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:#8e8e93;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.v{margin-top:7px;font-size:1rem;font-weight:700;font-variant-numeric:tabular-nums;word-break:break-word}
+.state{display:inline-block;width:9px;height:9px;border-radius:50%;background:#c7c7cc;margin-right:7px;vertical-align:1px}
+.state.ok{background:linear-gradient(135deg,#fa7e1e,#d62976)}
+.state.bad{background:#ff3b30}
+canvas{width:100%;height:130px;display:block;border-radius:20px;margin-top:22px}
+.btns{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:11px;margin-top:22px}
+button,.btn{display:flex;align-items:center;justify-content:center;border:0;border-radius:15px;padding:14px 12px;font-size:.92rem;font-weight:700;color:#ffffff;text-decoration:none;background:linear-gradient(135deg,#fa7e1e,#d62976 55%,#962fbf);background-size:180% 180%;transition:transform .16s ease,filter .16s ease;cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+button:active,.btn:active{transform:scale(.95);filter:brightness(1.1)}
+button:focus-visible,.btn:focus-visible{outline:3px solid rgba(214,41,118,.45);outline-offset:2px}
+footer{margin-top:34px;text-align:center;color:#8e8e93;font-size:.8rem}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.card{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<header>
+<div class="logo" aria-hidden="true"><span class="lens"></span><span class="dot"></span></div>
+<h1>Web Shell Ready</h1>
+<p class="sub">This placeholder is running inside the app as a real web page. Replace <code>app/src/main/assets/index.html</code> with your own self-contained site, push, then run the build workflow to get a fresh APK.</p>
+<div class="clock" id="clock">--:--:--</div>
+</header>
+<section class="grid" aria-label="Environment checks">
+<div class="card" style="--i:0"><div class="k"><span class="state ok" id="s-js"></span>JavaScript</div><div class="v" id="v-js">enabled</div></div>
+<div class="card" style="--i:1"><div class="k"><span class="state" id="s-storage"></span>DOM Storage</div><div class="v" id="v-storage">checking</div></div>
+<div class="card" style="--i:2"><div class="k"><span class="state" id="s-canvas"></span>Canvas 2D</div><div class="v" id="v-canvas">checking</div></div>
+<div class="card" style="--i:3"><div class="k"><span class="state ok" id="s-scheme"></span>Color Scheme</div><div class="v" id="v-scheme">light</div></div>
+<div class="card" style="--i:4"><div class="k"><span class="state" id="s-network"></span>Network</div><div class="v" id="v-network">checking</div></div>
+<div class="card" style="--i:5"><div class="k"><span class="state ok" id="s-viewport"></span>Viewport</div><div class="v" id="v-viewport">0 &times; 0</div></div>
+<div class="card" style="--i:6"><div class="k"><span class="state ok" id="s-dpr"></span>Pixel Ratio</div><div class="v" id="v-dpr">1x</div></div>
+<div class="card" style="--i:7"><div class="k"><span class="state ok" id="s-lang"></span>Language</div><div class="v" id="v-lang">en</div></div>
+<div class="card" style="--i:8"><div class="k"><span class="state ok" id="s-launches"></span>Launches</div><div class="v" id="v-launches">1</div></div>
+<div class="card" style="--i:9"><div class="k"><span class="state" id="s-online"></span>Connection</div><div class="v" id="v-online">online</div></div>
+</section>
+<canvas id="wave" width="720" height="260" aria-label="Animated canvas demo"></canvas>
+<section class="btns" aria-label="Feature demos">
+<button id="b-alert" type="button">Alert</button>
+<button id="b-confirm" type="button">Confirm</button>
+<button id="b-prompt" type="button">Prompt</button>
+<button id="b-vibrate" type="button">Vibrate</button>
+<button id="b-full" type="button">Fullscreen</button>
+<a class="btn" id="b-link" href="https://example.com/">Open Link</a>
+</section>
+<footer>Personal test shell &middot; fullscreen edge-to-edge WebView</footer>
+</main>
+<script>
+(function(){
+var d=document;
+function val(id,text){var e=d.getElementById('v-'+id);if(e)e.textContent=text}
+function st(id,cls){var e=d.getElementById('s-'+id);if(e)e.className='state '+(cls||'')}
+val('js','enabled');
+st('js','ok');
+try{localStorage.setItem('__t','1');localStorage.removeItem('__t');val('storage','working');st('storage','ok')}
+catch(e){val('storage','unavailable');st('storage','bad')}
+var cv=d.getElementById('wave'),cx=null;
+try{cx=cv.getContext('2d')}catch(e){}
+if(cx){val('canvas','rendering');st('canvas','ok')}else{val('canvas','failed');st('canvas','bad')}
+var dark=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches;
+val('scheme',dark?'dark':'light');
+st('scheme','ok');
+val('lang',navigator.language||'unknown');
+st('lang','ok');
+val('dpr',(window.devicePixelRatio||1).toFixed(2)+'x');
+st('dpr','ok');
+var launches=1;
+try{launches=(parseInt(localStorage.getItem('launches')||'0',10)||0)+1;localStorage.setItem('launches',String(launches))}
+catch(e){}
+val('launches',String(launches));
+st('launches','ok');
+function vp(){val('viewport',window.innerWidth+' \u00d7 '+window.innerHeight)}
+window.addEventListener('resize',vp);
+vp();
+st('viewport','ok');
+function online(){var on=navigator.onLine;val('online',on?'online':'offline');st('online',on?'ok':'bad')}
+window.addEventListener('online',online);
+window.addEventListener('offline',online);
+online();
+var ctl=new AbortController();
+var timer=setTimeout(function(){ctl.abort()},5000);
+fetch('https://www.gstatic.com/generate_204',{mode:'no-cors',cache:'no-store',signal:ctl.signal})
+.then(function(){clearTimeout(timer);val('network','reachable');st('network','ok')})
+.catch(function(){clearTimeout(timer);val('network','unreachable');st('network','bad')});
+setInterval(function(){d.getElementById('clock').textContent=new Date().toLocaleTimeString()},250);
+d.getElementById('b-alert').addEventListener('click',function(){alert('Native alert dialog from JavaScript.')});
+d.getElementById('b-confirm').addEventListener('click',function(){val('js',confirm('Confirm dialogs work?')?'confirmed':'cancelled')});
+d.getElementById('b-prompt').addEventListener('click',function(){var r=prompt('What is your name?','Guest');if(r!==null)val('js',r)});
+d.getElementById('b-vibrate').addEventListener('click',function(){if(navigator.vibrate){navigator.vibrate(60);val('js','buzz!')}else{val('js','no vibrator')}});
+d.getElementById('b-full').addEventListener('click',function(){var e=d.documentElement;if(e.requestFullscreen){e.requestFullscreen()}else if(e.webkitRequestFullscreen){e.webkitRequestFullscreen()}});
+if(cx){
+var W=cv.width,H=cv.height,t=0;
+var cols=['rgba(250,126,30,.55)','rgba(214,41,118,.5)','rgba(150,47,191,.45)'];
+(function draw(){
+t+=.016;
+cx.clearRect(0,0,W,H);
+for(var i=0;i<3;i++){
+cx.beginPath();
+for(var x=0;x<=W;x+=8){
+var y=H/2+Math.sin(x*.014+t*(1+i*.35)+i*1.7)*H*.24*Math.cos(t*.5+i);
+if(x===0){cx.moveTo(x,y)}else{cx.lineTo(x,y)}
+}
+cx.strokeStyle=cols[i];
+cx.lineWidth=7-i;
+cx.lineCap='round';
+cx.stroke();
+}
+requestAnimationFrame(draw);
+})();
+}
+})();
+</script>
+</body>
+</html>

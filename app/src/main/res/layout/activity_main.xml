@@ -18,7 +18,8 @@
         <FrameLayout
             android:id="@+id/splash_scene"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:background="@color/splash_background">
 
             <ImageView
                 android:id="@+id/splash_logo"
@@ -60,6 +61,7 @@
             android:id="@+id/loading_scene"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:background="@color/loading_background"
             android:importantForAccessibility="no"
             android:visibility="gone">
 

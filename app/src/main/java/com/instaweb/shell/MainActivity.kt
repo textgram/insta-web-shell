@@ -1,8 +1,6 @@
 package com.instaweb.shell
 
 import android.Manifest
-import android.animation.ArgbEvaluator
-import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.app.DownloadManager
 import android.content.ActivityNotFoundException
@@ -186,6 +184,8 @@ class MainActivity : AppCompatActivity() {
                 if (inLoadingPhase) R.color.loading_background else R.color.splash_background
             )
         )
+        splashScene.setBackgroundColor(ContextCompat.getColor(this, R.color.splash_background))
+        loadingScene.setBackgroundColor(ContextCompat.getColor(this, R.color.loading_background))
         val controller = WindowInsetsControllerCompat(window, window.decorView)
         controller.isAppearanceLightStatusBars = !night
         controller.isAppearanceLightNavigationBars = !night
@@ -215,38 +215,19 @@ class MainActivity : AppCompatActivity() {
             block.layoutParams = params
             WindowInsetsCompat.CONSUMED
         }
-        startupOverlay.post {
-            val easeOut = PathInterpolator(0.22f, 1f, 0.36f, 1f)
-            logo.alpha = 0f
-            logo.scaleX = 0.92f
-            logo.scaleY = 0.92f
-            logo.animate().alpha(1f).scaleX(1f).scaleY(1f).setDuration(320).setInterpolator(easeOut).start()
-            block.alpha = 0f
-            block.translationY = 14f * density
-            block.animate().alpha(1f).translationY(0f).setStartDelay(120).setDuration(340).setInterpolator(easeOut).start()
-        }
         mainHandler.postDelayed({ transitionToLoading() }, SPLASH_HOLD_MS)
     }
 
     private fun transitionToLoading() {
         inLoadingPhase = true
-        val from = ContextCompat.getColor(this, R.color.splash_background)
-        val to = ContextCompat.getColor(this, R.color.loading_background)
-        if (from != to) {
-            ValueAnimator.ofObject(ArgbEvaluator(), from, to).apply {
-                duration = SCENE_FADE_MS
-                addUpdateListener { animator ->
-                    startupOverlay.setBackgroundColor(animator.animatedValue as Int)
-                }
-                start()
-            }
-        }
+        val width = startupOverlay.width.toFloat()
+        val easeOut = PathInterpolator(0.22f, 1f, 0.36f, 1f)
         loadingScene.visibility = View.VISIBLE
-        loadingScene.alpha = 0f
-        loadingScene.animate().alpha(1f).setDuration(SCENE_FADE_MS).start()
-        splashScene.animate().alpha(0f).setDuration(SCENE_FADE_MS).withEndAction {
+        loadingScene.translationX = width
+        splashScene.animate().translationX(-width).setDuration(SCENE_SWIPE_MS).setInterpolator(easeOut).withEndAction {
             splashScene.visibility = View.GONE
         }.start()
+        loadingScene.animate().translationX(0f).setDuration(SCENE_SWIPE_MS).setInterpolator(easeOut).start()
         mainHandler.postDelayed({ startWebLoad() }, SPINNER_HOLD_MS)
     }
 
@@ -259,7 +240,8 @@ class MainActivity : AppCompatActivity() {
     private fun revealWeb() {
         if (!startupActive || startupRevealed) return
         startupRevealed = true
-        startupOverlay.animate().alpha(0f).setDuration(REVEAL_FADE_MS).withEndAction {
+        val easeOut = PathInterpolator(0.22f, 1f, 0.36f, 1f)
+        startupOverlay.animate().translationX(-startupOverlay.width.toFloat()).setDuration(REVEAL_SWIPE_MS).setInterpolator(easeOut).withEndAction {
             startupOverlay.visibility = View.GONE
             (startupOverlay.parent as? ViewGroup)?.removeView(startupOverlay)
             startupActive = false
@@ -639,10 +621,10 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val INITIAL_URL = "file:///android_asset/index.html"
-        private const val SPLASH_HOLD_MS = 1100L
-        private const val SCENE_FADE_MS = 260L
-        private const val SPINNER_HOLD_MS = 1400L
-        private const val REVEAL_FADE_MS = 320L
+        private const val SPLASH_HOLD_MS = 900L
+        private const val SCENE_SWIPE_MS = 320L
+        private const val SPINNER_HOLD_MS = 1200L
+        private const val REVEAL_SWIPE_MS = 340L
         private const val WEB_REVEAL_TIMEOUT_MS = 8000L
 
         private const val BG_PROBE_SCRIPT =

@@ -11,7 +11,8 @@ Personal Android app that runs a self-contained website (`app/src/main/assets/in
 
 ## Notes
 
-- Debug-signed and intended for personal testing only. Not affiliated with Instagram.
+- The launcher starts with an Instagram-branded splash screen (gradient glyph plus "from Meta") that follows the device theme, then a brief blue loading spinner, before revealing the page. It only plays on a fresh launch, never on rotation or process restore.
+- Debug-signed and intended for personal testing only. Not affiliated with Instagram or Meta.
 - The WebView runs JavaScript, DOM storage, alerts/prompts/confirms, file pickers, camera/microphone/geolocation, downloads, fullscreen video, and pinch zoom, and it never lays out content behind the notch or system bars.
 - The APK is padded to roughly 70 MB by a filler asset generated at build time (`build/generated/padAssets/pad.bin`); it is never committed to git.
 - Requires Android 7.0 or newer.

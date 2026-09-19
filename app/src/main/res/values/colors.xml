@@ -1,3 +1,7 @@
 <resources>
     <color name="window_background">#FFFFFF</color>
+    <color name="splash_background">#FFFFFF</color>
+    <color name="loading_background">#FFFFFF</color>
+    <color name="splash_from">#7F8E9B</color>
+    <color name="spinner_blue">#0095F6</color>
 </resources>

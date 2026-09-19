@@ -14,11 +14,14 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
+import android.os.Handler
+import android.os.Looper
 import android.provider.MediaStore
 import android.util.Base64
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.view.animation.PathInterpolator
 import android.webkit.GeolocationPermissions
 import android.webkit.JsPromptResult
 import android.webkit.JsResult
@@ -34,6 +37,8 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.EditText
 import android.widget.FrameLayout
+import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.activity.result.contract.ActivityResultContracts
@@ -49,10 +54,13 @@ import androidx.webkit.WebViewFeature
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.io.File
 import java.net.URLDecoder
+import kotlin.math.max
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var webView: WebView
+    private lateinit var splashOverlay: FrameLayout
+    private lateinit var loadingOverlay: FrameLayout
     private var customView: View? = null
     private var customViewCallback: WebChromeClient.CustomViewCallback? = null
     private var filePathCallback: ValueCallback<Array<Uri>>? = null
@@ -60,6 +68,10 @@ class MainActivity : AppCompatActivity() {
     private var pendingGeoOrigin: String? = null
     private var pendingGeoCallback: GeolocationPermissions.Callback? = null
     private var pendingDownloadAction: (() -> Unit)? = null
+    private var splashActive = false
+    private var pendingBackgroundSync = false
+    private var lastNightMode = false
+    private val mainHandler = Handler(Looper.getMainLooper())
 
     private val fileChooserLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         val callback = filePathCallback
@@ -99,8 +111,9 @@ class MainActivity : AppCompatActivity() {
         }
         setContentView(R.layout.activity_main)
         webView = findViewById(R.id.web_view)
-        val night = (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
-        webView.setBackgroundColor(if (night) Color.BLACK else Color.WHITE)
+        splashOverlay = findViewById(R.id.splash_overlay)
+        loadingOverlay = findViewById(R.id.loading_overlay)
+        applyThemeColors()
         setupInsets()
         setupWebView()
         onBackPressedDispatcher.addCallback(this) {
@@ -112,8 +125,13 @@ class MainActivity : AppCompatActivity() {
         }
         if (savedInstanceState == null) {
             webView.loadUrl(INITIAL_URL)
-        } else if (webView.restoreState(savedInstanceState) == null) {
-            webView.loadUrl(INITIAL_URL)
+            startSplashSequence()
+        } else {
+            splashOverlay.visibility = View.GONE
+            loadingOverlay.visibility = View.GONE
+            if (webView.restoreState(savedInstanceState) == null) {
+                webView.loadUrl(INITIAL_URL)
+            }
         }
         if ((applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0) {
             WebView.setWebContentsDebuggingEnabled(true)
@@ -123,6 +141,15 @@ class MainActivity : AppCompatActivity() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         webView.saveState(outState)
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        val night = (newConfig.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+        if (night != lastNightMode) {
+            lastNightMode = night
+            applyThemeColors()
+        }
     }
 
     override fun onPause() {
@@ -136,11 +163,80 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
+        mainHandler.removeCallbacksAndMessages(null)
         customView?.let { (window.decorView as ViewGroup).removeView(it) }
         customView = null
         customViewCallback = null
         webView.destroy()
         super.onDestroy()
+    }
+
+    private fun applyThemeColors() {
+        val night = isNightMode()
+        lastNightMode = night
+        webView.setBackgroundColor(if (night) Color.BLACK else Color.WHITE)
+        splashOverlay.setBackgroundColor(ContextCompat.getColor(this, R.color.splash_background))
+        loadingOverlay.setBackgroundColor(ContextCompat.getColor(this, R.color.loading_background))
+        val controller = WindowInsetsControllerCompat(window, window.decorView)
+        controller.isAppearanceLightStatusBars = !night
+        controller.isAppearanceLightNavigationBars = !night
+    }
+
+    private fun startSplashSequence() {
+        splashActive = true
+        val density = resources.displayMetrics.density
+        val metrics = resources.displayMetrics
+        val minDimPx = minOf(metrics.widthPixels, metrics.heightPixels).toFloat()
+        val logoSize = (minDimPx * 0.27f).coerceIn(96f * density, 120f * density).toInt()
+        val logo = findViewById<ImageView>(R.id.splash_logo)
+        logo.layoutParams = logo.layoutParams.apply {
+            width = logoSize
+            height = logoSize
+        }
+        val lockup = findViewById<ImageView>(R.id.splash_meta_lockup)
+        val lockupWidth = (minDimPx * 0.217f).coerceIn(64f * density, 112f * density).toInt()
+        lockup.layoutParams = lockup.layoutParams.apply {
+            width = lockupWidth
+        }
+        val block = findViewById<LinearLayout>(R.id.splash_lockup_block)
+        ViewCompat.setOnApplyWindowInsetsListener(splashOverlay) { _, insets ->
+            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout())
+            val params = block.layoutParams as FrameLayout.LayoutParams
+            params.bottomMargin = max((metrics.heightPixels * 0.10f).toInt(), bars.bottom + (20f * density).toInt())
+            block.layoutParams = params
+            WindowInsetsCompat.CONSUMED
+        }
+        val easeOut = PathInterpolator(0.22f, 1f, 0.36f, 1f)
+        logo.scaleX = 0.9f
+        logo.scaleY = 0.9f
+        logo.animate().scaleX(1f).scaleY(1f).setDuration(320).setInterpolator(easeOut).start()
+        block.alpha = 0f
+        block.translationY = 14f * density
+        block.animate().alpha(1f).translationY(0f).setStartDelay(120).setDuration(340).setInterpolator(easeOut).start()
+        mainHandler.postDelayed({ transitionToLoading() }, SPLASH_HOLD_MS)
+    }
+
+    private fun transitionToLoading() {
+        loadingOverlay.visibility = View.VISIBLE
+        loadingOverlay.alpha = 0f
+        loadingOverlay.animate().alpha(1f).setDuration(260).start()
+        splashOverlay.animate().alpha(0f).setDuration(260).withEndAction {
+            splashOverlay.visibility = View.GONE
+        }.start()
+        mainHandler.postDelayed({ dismissLoading() }, 260 + SPINNER_HOLD_MS)
+    }
+
+    private fun dismissLoading() {
+        loadingOverlay.animate().alpha(0f).setDuration(320).withEndAction {
+            loadingOverlay.visibility = View.GONE
+            (splashOverlay.parent as? ViewGroup)?.removeView(splashOverlay)
+            (loadingOverlay.parent as? ViewGroup)?.removeView(loadingOverlay)
+            splashActive = false
+            if (pendingBackgroundSync) {
+                pendingBackgroundSync = false
+                syncPageBackground()
+            }
+        }.start()
     }
 
     private fun setupInsets() {
@@ -211,7 +307,11 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onPageFinished(view: WebView, url: String?) {
-                syncPageBackground()
+                if (splashActive) {
+                    pendingBackgroundSync = true
+                } else {
+                    syncPageBackground()
+                }
             }
 
             override fun onReceivedError(view: WebView, request: WebResourceRequest, error: WebResourceError) {
@@ -507,6 +607,8 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val INITIAL_URL = "file:///android_asset/index.html"
+        private const val SPLASH_HOLD_MS = 1000L
+        private const val SPINNER_HOLD_MS = 1400L
 
         private const val BG_PROBE_SCRIPT =
             "(function(){try{function ok(x){return x&&x!=='rgba(0, 0, 0, 0)'&&x!=='transparent'}" +

@@ -1,5 +1,69 @@
 <?xml version="1.0" encoding="utf-8"?>
-<WebView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/web_view"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" />
+    android:layout_height="match_parent">
+
+    <WebView
+        android:id="@+id/web_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <FrameLayout
+        android:id="@+id/splash_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/splash_background"
+        android:importantForAccessibility="no">
+
+        <ImageView
+            android:id="@+id/splash_logo"
+            android:layout_width="96dp"
+            android:layout_height="96dp"
+            android:layout_gravity="center"
+            android:contentDescription="@null"
+            android:src="@drawable/splash_ig_logo" />
+
+        <LinearLayout
+            android:id="@+id/splash_lockup_block"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center_horizontal"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/splash_from"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:includeFontPadding="false"
+                android:text="@string/splash_from"
+                android:textColor="@color/splash_from"
+                android:textSize="16sp" />
+
+            <ImageView
+                android:id="@+id/splash_meta_lockup"
+                android:layout_width="86dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:adjustViewBounds="true"
+                android:contentDescription="@null"
+                android:src="@drawable/splash_meta_lockup" />
+        </LinearLayout>
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/loading_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/loading_background"
+        android:importantForAccessibility="no"
+        android:visibility="gone">
+
+        <com.instaweb.shell.ArcSpinner
+            android:id="@+id/loading_spinner"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_gravity="center" />
+    </FrameLayout>
+
+</FrameLayout>

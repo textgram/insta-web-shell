@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">Instagram</string>
+    <string name="splash_from">from</string>
     <string name="choose_file">Choose file</string>
     <string name="no_app_found">No app can open this link</string>
     <string name="download_started">Download started</string>

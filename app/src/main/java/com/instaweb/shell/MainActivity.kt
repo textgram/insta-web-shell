@@ -74,6 +74,7 @@ class MainActivity : AppCompatActivity() {
     private var startupRevealed = false
     private var inLoadingPhase = false
     private var lastNightMode = false
+    private val swipeEase = PathInterpolator(0.4f, 0f, 0.2f, 1f)
     private val mainHandler = Handler(Looper.getMainLooper())
 
     private val fileChooserLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -196,12 +197,7 @@ class MainActivity : AppCompatActivity() {
         val density = resources.displayMetrics.density
         val metrics = resources.displayMetrics
         val minDimPx = minOf(metrics.widthPixels, metrics.heightPixels).toFloat()
-        val logoSize = (minDimPx * 0.27f).coerceIn(96f * density, 120f * density).toInt()
         val logo = findViewById<ImageView>(R.id.splash_logo)
-        logo.layoutParams = logo.layoutParams.apply {
-            width = logoSize
-            height = logoSize
-        }
         val lockup = findViewById<ImageView>(R.id.splash_meta_lockup)
         val lockupWidth = (minDimPx * 0.217f).coerceIn(64f * density, 112f * density).toInt()
         lockup.layoutParams = lockup.layoutParams.apply {
@@ -215,19 +211,25 @@ class MainActivity : AppCompatActivity() {
             block.layoutParams = params
             WindowInsetsCompat.CONSUMED
         }
+        val settle = PathInterpolator(0.22f, 1f, 0.36f, 1f)
+        logo.animate().scaleX(1.05f).scaleY(1.05f).setDuration(240).setInterpolator(settle).withEndAction {
+            logo.animate().scaleX(1f).scaleY(1f).setDuration(340).setInterpolator(settle).start()
+        }.start()
+        block.alpha = 0f
+        block.translationY = 16f * density
+        block.animate().alpha(1f).translationY(0f).setStartDelay(180).setDuration(440).setInterpolator(settle).start()
         mainHandler.postDelayed({ transitionToLoading() }, SPLASH_HOLD_MS)
     }
 
     private fun transitionToLoading() {
         inLoadingPhase = true
         val width = startupOverlay.width.toFloat()
-        val easeOut = PathInterpolator(0.22f, 1f, 0.36f, 1f)
         loadingScene.visibility = View.VISIBLE
         loadingScene.translationX = width
-        splashScene.animate().translationX(-width).setDuration(SCENE_SWIPE_MS).setInterpolator(easeOut).withEndAction {
+        splashScene.animate().translationX(-width).setDuration(SCENE_SWIPE_MS).setInterpolator(swipeEase).withEndAction {
             splashScene.visibility = View.GONE
         }.start()
-        loadingScene.animate().translationX(0f).setDuration(SCENE_SWIPE_MS).setInterpolator(easeOut).start()
+        loadingScene.animate().translationX(0f).setDuration(SCENE_SWIPE_MS).setInterpolator(swipeEase).start()
         mainHandler.postDelayed({ startWebLoad() }, SPINNER_HOLD_MS)
     }
 
@@ -240,8 +242,10 @@ class MainActivity : AppCompatActivity() {
     private fun revealWeb() {
         if (!startupActive || startupRevealed) return
         startupRevealed = true
-        val easeOut = PathInterpolator(0.22f, 1f, 0.36f, 1f)
-        startupOverlay.animate().translationX(-startupOverlay.width.toFloat()).setDuration(REVEAL_SWIPE_MS).setInterpolator(easeOut).withEndAction {
+        val width = startupOverlay.width.toFloat()
+        webView.translationX = width
+        webView.animate().translationX(0f).setDuration(REVEAL_SWIPE_MS).setInterpolator(swipeEase).start()
+        startupOverlay.animate().translationX(-width).setDuration(REVEAL_SWIPE_MS).setInterpolator(swipeEase).withEndAction {
             startupOverlay.visibility = View.GONE
             (startupOverlay.parent as? ViewGroup)?.removeView(startupOverlay)
             startupActive = false
@@ -621,10 +625,10 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val INITIAL_URL = "file:///android_asset/index.html"
-        private const val SPLASH_HOLD_MS = 900L
-        private const val SCENE_SWIPE_MS = 320L
-        private const val SPINNER_HOLD_MS = 1200L
-        private const val REVEAL_SWIPE_MS = 340L
+        private const val SPLASH_HOLD_MS = 1100L
+        private const val SCENE_SWIPE_MS = 560L
+        private const val SPINNER_HOLD_MS = 1300L
+        private const val REVEAL_SWIPE_MS = 560L
         private const val WEB_REVEAL_TIMEOUT_MS = 8000L
 
         private const val BG_PROBE_SCRIPT =

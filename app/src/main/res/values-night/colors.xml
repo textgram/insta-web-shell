@@ -1,5 +1,4 @@
 <resources>
-    <color name="window_background">#1A1A1A</color>
     <color name="splash_background">#1A1A1A</color>
     <color name="loading_background">#000000</color>
     <color name="splash_from">#8B9CAA</color>

@@ -23,11 +23,11 @@
 
             <ImageView
                 android:id="@+id/splash_logo"
-                android:layout_width="96dp"
-                android:layout_height="96dp"
+                android:layout_width="288dp"
+                android:layout_height="288dp"
                 android:layout_gravity="center"
                 android:contentDescription="@null"
-                android:src="@drawable/splash_ig_logo" />
+                android:src="@drawable/splash_window_icon" />
 
             <LinearLayout
                 android:id="@+id/splash_lockup_block"

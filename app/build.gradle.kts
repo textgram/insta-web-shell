@@ -14,8 +14,8 @@ android {
         applicationId = "com.instaweb.shell"
         minSdk = 24
         targetSdk = 35
-        versionCode = 5
-        versionName = "1.4"
+        versionCode = 447005581
+        versionName = "447.0.0.55.81"
     }
 
     compileOptions {

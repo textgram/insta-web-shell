@@ -9,6 +9,7 @@ import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.content.res.Configuration
+import android.graphics.Bitmap
 import android.graphics.Color
 import android.net.Uri
 import android.os.Build
@@ -22,6 +23,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.animation.PathInterpolator
+import android.webkit.CookieManager
 import android.webkit.GeolocationPermissions
 import android.webkit.JsPromptResult
 import android.webkit.JsResult
@@ -73,6 +75,8 @@ class MainActivity : AppCompatActivity() {
     private var startupLoaded = false
     private var startupRevealed = false
     private var inLoadingPhase = false
+    private var instagramEntered = false
+    private var instagramLoadActive = false
     private var lastNightMode = false
     private val swipeEase = PathInterpolator(0.4f, 0f, 0.2f, 1f)
     private val mainHandler = Handler(Looper.getMainLooper())
@@ -124,17 +128,24 @@ class MainActivity : AppCompatActivity() {
         onBackPressedDispatcher.addCallback(this) {
             when {
                 customView != null -> hideFullscreenView()
-                webView.canGoBack() -> webView.goBack()
+                webView.canGoBack() -> {
+                    val list = webView.copyBackForwardList()
+                    val previous = if (list.currentIndex > 0) list.getItemAtIndex(list.currentIndex - 1)?.url else null
+                    if (instagramEntered && previous == INITIAL_URL) finish()
+                    else webView.goBack()
+                }
                 else -> finish()
             }
         }
+        instagramEntered = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+            .getBoolean(KEY_INSTAGRAM_ENTERED, false)
         if (savedInstanceState == null) {
             startSplashSequence()
         } else {
             startupActive = false
             startupOverlay.visibility = View.GONE
             if (webView.restoreState(savedInstanceState) == null) {
-                webView.loadUrl(INITIAL_URL)
+                webView.loadUrl(if (instagramEntered) INSTAGRAM_URL else INITIAL_URL)
             }
         }
         if ((applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0) {
@@ -197,7 +208,6 @@ class MainActivity : AppCompatActivity() {
         val density = resources.displayMetrics.density
         val metrics = resources.displayMetrics
         val minDimPx = minOf(metrics.widthPixels, metrics.heightPixels).toFloat()
-        val logo = findViewById<ImageView>(R.id.splash_logo)
         val lockup = findViewById<ImageView>(R.id.splash_meta_lockup)
         val lockupWidth = (minDimPx * 0.217f).coerceIn(64f * density, 112f * density).toInt()
         lockup.layoutParams = lockup.layoutParams.apply {
@@ -212,9 +222,6 @@ class MainActivity : AppCompatActivity() {
             WindowInsetsCompat.CONSUMED
         }
         val settle = PathInterpolator(0.22f, 1f, 0.36f, 1f)
-        logo.animate().scaleX(1.05f).scaleY(1.05f).setDuration(240).setInterpolator(settle).withEndAction {
-            logo.animate().scaleX(1f).scaleY(1f).setDuration(340).setInterpolator(settle).start()
-        }.start()
         block.alpha = 0f
         block.translationY = 16f * density
         block.animate().alpha(1f).translationY(0f).setStartDelay(180).setDuration(440).setInterpolator(settle).start()
@@ -235,22 +242,63 @@ class MainActivity : AppCompatActivity() {
 
     private fun startWebLoad() {
         startupLoaded = true
-        webView.loadUrl(INITIAL_URL)
+        webView.loadUrl(if (instagramEntered) INSTAGRAM_URL else INITIAL_URL)
         mainHandler.postDelayed({ forceReveal() }, WEB_REVEAL_TIMEOUT_MS)
     }
 
     private fun revealWeb() {
         if (!startupActive || startupRevealed) return
         startupRevealed = true
+        pushOverlayAway {
+            startupActive = false
+            syncPageBackground()
+        }
+    }
+
+    private fun pushOverlayAway(onHidden: () -> Unit) {
         val width = startupOverlay.width.toFloat()
         webView.translationX = width
         webView.animate().translationX(0f).setDuration(REVEAL_SWIPE_MS).setInterpolator(swipeEase).start()
         startupOverlay.animate().translationX(-width).setDuration(REVEAL_SWIPE_MS).setInterpolator(swipeEase).withEndAction {
             startupOverlay.visibility = View.GONE
-            (startupOverlay.parent as? ViewGroup)?.removeView(startupOverlay)
-            startupActive = false
-            syncPageBackground()
+            startupOverlay.translationX = 0f
+            onHidden()
         }.start()
+    }
+
+    private fun isInstagramHost(host: String?): Boolean {
+        val value = host?.lowercase() ?: return false
+        return value == "instagram.com" || value.endsWith(".instagram.com")
+    }
+
+    private fun beginInstagramEntry() {
+        instagramEntered = true
+        getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+            .edit()
+            .putBoolean(KEY_INSTAGRAM_ENTERED, true)
+            .apply()
+        if (!startupActive && !instagramLoadActive) showInstagramLoader()
+    }
+
+    private fun showInstagramLoader() {
+        instagramLoadActive = true
+        splashScene.visibility = View.GONE
+        loadingScene.visibility = View.VISIBLE
+        loadingScene.translationX = 0f
+        inLoadingPhase = true
+        startupOverlay.setBackgroundColor(ContextCompat.getColor(this, R.color.loading_background))
+        startupOverlay.alpha = 1f
+        startupOverlay.translationX = 0f
+        startupOverlay.visibility = View.VISIBLE
+        mainHandler.postDelayed({ if (instagramLoadActive) hideInstagramLoader() }, INSTAGRAM_LOAD_TIMEOUT_MS)
+    }
+
+    private fun hideInstagramLoader() {
+        if (!instagramLoadActive) return
+        instagramLoadActive = false
+        pushOverlayAway {
+            syncPageBackground()
+        }
     }
 
     private fun forceReveal() {
@@ -311,12 +359,25 @@ class MainActivity : AppCompatActivity() {
             WebSettingsCompat.setAlgorithmicDarkeningAllowed(webView.settings, false)
         }
         webView.setBackgroundColor(if (isNightMode()) Color.BLACK else Color.WHITE)
+        CookieManager.getInstance().apply {
+            setAcceptCookie(true)
+            setAcceptThirdPartyCookies(webView, true)
+        }
         webView.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
                 val url = request.url
                 val scheme = url.scheme?.lowercase() ?: return false
                 return when (scheme) {
-                    "http", "https", "file", "data", "blob", "about", "javascript" -> false
+                    "http", "https" -> {
+                        if (isInstagramHost(url.host)) {
+                            if (!instagramEntered) beginInstagramEntry()
+                            false
+                        } else {
+                            openExternally(url)
+                            true
+                        }
+                    }
+                    "file", "data", "blob", "about", "javascript" -> false
                     else -> {
                         openExternally(url)
                         true
@@ -324,9 +385,17 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
+            override fun onPageStarted(view: WebView, url: String?, favicon: Bitmap?) {
+                if (url != null && !instagramEntered && isInstagramHost(Uri.parse(url).host)) {
+                    beginInstagramEntry()
+                }
+            }
+
             override fun onPageFinished(view: WebView, url: String?) {
                 if (startupActive) {
                     if (startupLoaded) revealWeb()
+                } else if (instagramLoadActive) {
+                    hideInstagramLoader()
                 } else {
                     syncPageBackground()
                 }
@@ -334,7 +403,10 @@ class MainActivity : AppCompatActivity() {
 
             override fun onReceivedError(view: WebView, request: WebResourceRequest, error: WebResourceError) {
                 if (request.isForMainFrame) {
-                    showErrorPage(error.description?.toString() ?: getString(R.string.error_message_default))
+                    showErrorPage(
+                        error.description?.toString() ?: getString(R.string.error_message_default),
+                        request.url.toString()
+                    )
                 }
             }
         }
@@ -510,12 +582,18 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun showErrorPage(message: String) {
+    private fun showErrorPage(message: String, retryUrl: String) {
         val safe = message
             .replace("&", "&amp;")
             .replace("<", "&lt;")
             .replace(">", "&gt;")
-        val html = ERROR_PAGE.replace("__MESSAGE__", Uri.encode(safe))
+        val safeUrl = retryUrl
+            .replace("\\", "\\\\")
+            .replace("\"", "\\\"")
+            .replace("'", "\\'")
+        val html = ERROR_PAGE
+            .replace("__MESSAGE__", Uri.encode(safe))
+            .replace("__RETRY_URL__", safeUrl)
         webView.loadDataWithBaseURL(null, html, "text/html", "utf-8", null)
     }
 
@@ -625,6 +703,10 @@ class MainActivity : AppCompatActivity() {
 
     companion object {
         private const val INITIAL_URL = "file:///android_asset/index.html"
+        private const val INSTAGRAM_URL = "https://www.instagram.com/"
+        private const val PREFS_NAME = "web_state"
+        private const val KEY_INSTAGRAM_ENTERED = "instagram_entered"
+        private const val INSTAGRAM_LOAD_TIMEOUT_MS = 15000L
         private const val SPLASH_HOLD_MS = 1100L
         private const val SCENE_SWIPE_MS = 560L
         private const val SPINNER_HOLD_MS = 1300L
@@ -652,7 +734,7 @@ class MainActivity : AppCompatActivity() {
                 "button{border:0;border-radius:13px;padding:13px 22px;font-size:.9rem;font-weight:700;color:#fff;" +
                 "background:linear-gradient(135deg,#fa7e1e,#d62976 55%,#962fbf);cursor:pointer}" +
                 "</style></head><body><div class=\"card\"><h1>Page unavailable</h1><p id=\"m\"></p>" +
-                "<button onclick=\"location.replace('file:///android_asset/index.html')\">Try again</button></div>" +
+                "<button onclick=\"location.replace('__RETRY_URL__')\">Try again</button></div>" +
                 "<script>document.getElementById('m').textContent=decodeURIComponent(\"__MESSAGE__\")</script>" +
                 "</body></html>"
     }

